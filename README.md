@@ -24,7 +24,7 @@ This repository establishes a **Multi-Agent (A2A)** platform powered by `google_
 In this repository, the true power of **Agent-to-Agent (A2A) protocol** is utilized. 
 We've replaced standard monolithic dependencies with distributed `A2AClient` module tools.
 
-- The `Coordinator Agent` leverages `A2AClient` from `google_adk.a2a` to cleanly invoke remote endpoints.
+- The `Coordinator Agent` leverages `A2AClient` from `google_adk.a2a` to cleanly run remote endpoints.
 - The `Streamlit App` utilizes the A2A protocol to dispatch messages to the central Coordinator.
 
 This decoupling ensures that agents can scale out independently.
@@ -52,8 +52,8 @@ start_all.bat
 Once launched, the Streamlit app will open automatically in your browser (default: `http://localhost:8501`).
 1. Type a career goal, e.g., *"I want to become a Senior AI Engineer."*
 2. The UI sends the request via `A2AClient` to the **Coordinator Agent** (Port 8000).
-3. The Coordinator intelligently invokes the **Job Agent** (Port 8001) for market trends.
-4. The Coordinator then invokes the **Learning Agent** (Port 8002) for requisite learning paths.
+3. The Coordinator intelligently runs the **Job Agent** (Port 8001) for market trends.
+4. The Coordinator then runs the **Learning Agent** (Port 8002) for requisite learning paths.
 5. The Coordinator synthesizes the data and streams it back to your interface!
 
 ---

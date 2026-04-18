@@ -1,5 +1,15 @@
 import streamlit as st
-from google_adk.a2a import A2AClient
+import requests
+
+class A2AClient:
+    """Agent-to-Agent (A2A) HTTP Client Protocol wrapper."""
+    def __init__(self, endpoint: str):
+        self.endpoint = endpoint
+
+    def run(self, payload: dict) -> dict:
+        response = requests.post(self.endpoint, json=payload)
+        response.raise_for_status()
+        return response.json()
 
 st.set_page_config(page_title="AI Career Navigator", layout="centered", page_icon="🚀")
 
@@ -33,7 +43,7 @@ if prompt := st.chat_input("E.g., I want to become a Machine Learning Engineer")
             try:
                 # Call Coordinator service via A2A Protocol
                 coordinator = A2AClient(endpoint="http://localhost:8000/api/chat")
-                response = coordinator.invoke({"user_message": prompt})
+                response = coordinator.run({"user_message": prompt})
                 
                 # Based on the custom format in coordinator
                 if response:
