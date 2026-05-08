@@ -1,6 +1,6 @@
 """
 frontend/app.py
-Streamlit UI for the Multi-Agent Career Navigator system.
+Streamlit UI for the Multi-Agent Project Learning Navigator system.
 Connects to the Coordinator Agent via A2A HTTP on port 8000.
 """
 
@@ -10,24 +10,24 @@ import requests
 # ── Page config ───────────────────────────────────────────────────────────────
 
 st.set_page_config(
-    page_title="AI Career Navigator",
+    page_title="AI Project Learning Navigator",
     layout="centered",
     page_icon="🚀",
 )
 
 # ── Header ────────────────────────────────────────────────────────────────────
 
-st.title("🚀 Multi-Agent AI Career Navigator")
+st.title("🚀 Multi-Agent AI Project Learning Navigator")
 st.markdown("""
 This system uses a **3-agent A2A (Agent-to-Agent) architecture** powered by **Google ADK**:
 
 | Agent | Role | Port |
 |---|---|---|
 | 🧠 **Coordinator** | Orchestrates the full pipeline | 8000 |
-| 💼 **Job Agent** | Analyses job market & in-demand skills | 8001 |
+| 🛠️ **Project Mentor Agent** | Analyses project specs & extracts required skills | 8001 |
 | 📚 **Learning Agent** | Recommends courses & learning paths | 8002 |
 
-Just describe your career goal below and the agents will collaborate to build your roadmap!
+Just describe your project below and the agents will collaborate to build your learning roadmap!
 """)
 
 st.divider()
@@ -59,7 +59,7 @@ for message in st.session_state.messages:
 
 # ── Chat input ────────────────────────────────────────────────────────────────
 
-if prompt := st.chat_input("E.g., I want to become a Machine Learning Engineer"):
+if prompt := st.chat_input("E.g., I want to build a real-time chat application using React and Node.js"):
 
     # Show user message
     with st.chat_message("user"):
@@ -69,7 +69,7 @@ if prompt := st.chat_input("E.g., I want to become a Machine Learning Engineer")
     # Call coordinator and show response
     with st.chat_message("assistant"):
         with st.spinner(
-            "🤖 Agents collaborating: Coordinator → Job Agent → Learning Agent…"
+            "🤖 Agents collaborating: Coordinator → Project Mentor Agent → Learning Agent…"
         ):
             try:
                 coordinator = A2AClient(endpoint="http://127.0.0.1:8000/api/chat")
@@ -81,7 +81,7 @@ if prompt := st.chat_input("E.g., I want to become a Machine Learning Engineer")
                     "❌ **Connection Error** — Could not reach the Coordinator Agent.\n\n"
                     "Make sure all three agents are running:\n"
                     "```bash\n"
-                    "uvicorn agents.job_agent:app --host 127.0.0.1 --port 8001\n"
+                    "uvicorn agents.project_mentor_agent:app --host 127.0.0.1 --port 8001\n"
                     "uvicorn agents.learning_agent:app --host 127.0.0.1 --port 8002\n"
                     "uvicorn agents.coordinator:app --host 127.0.0.1 --port 8000\n"
                     "```"
@@ -104,9 +104,9 @@ with st.sidebar:
     st.header("🔌 Agent Status")
 
     services = {
-        "🧠 Coordinator (8000)": "http://127.0.0.1:8000/docs",
-        "💼 Job Agent (8001)":   "http://127.0.0.1:8001/docs",
-        "📚 Learning Agent (8002)": "http://127.0.0.1:8002/docs",
+        "🧠 Coordinator (8000)":            "http://127.0.0.1:8000/docs",
+        "🛠️ Project Mentor Agent (8001)":   "http://127.0.0.1:8001/docs",
+        "📚 Learning Agent (8002)":          "http://127.0.0.1:8002/docs",
     }
 
     if st.button("Check All Services"):
@@ -123,7 +123,7 @@ with st.sidebar:
     st.divider()
     st.markdown("**How to start all agents:**")
     st.code(
-        "uvicorn agents.job_agent:app --port 8001\n"
+        "uvicorn agents.project_mentor_agent:app --port 8001\n"
         "uvicorn agents.learning_agent:app --port 8002\n"
         "uvicorn agents.coordinator:app --port 8000\n"
         "streamlit run frontend/app.py",

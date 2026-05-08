@@ -3,7 +3,7 @@ agents/coordinator.py
 Coordinator Agent Microservice — port 8000
 
 Uses Google ADK Agent + Runner + InMemorySessionService.
-Calls Job Agent (8001) and Learning Agent (8002) via A2A HTTP protocol
+Calls Project Mentor Agent (8001) and Learning Agent (8002) via A2A HTTP protocol
 as ADK tools, so the LLM decides when and how to call them.
 """
 
@@ -41,24 +41,25 @@ class A2AClient:
 
 # ── 2. A2A Tool functions (registered as ADK tools) ──────────────────────────
 
-def request_job_market_data(domain: str) -> dict:
+def request_project_analysis(project_spec: str) -> dict:
     """
-    Contact the Job Agent microservice to get job market analysis for a career domain.
+    Contact the Project Mentor Agent microservice to analyze a project specification
+    and extract required skills, technologies, frameworks, tools, and key concepts.
 
     Args:
-        domain: The career domain or job title to research (e.g. 'Machine Learning').
+        project_spec: The project description or specification provided by the user.
 
     Returns:
-        A dict with a 'result' key containing the job market summary.
+        A dict with a 'result' key containing the project analysis summary.
     """
     try:
-        client = A2AClient(endpoint="http://127.0.0.1:8001/api/jobs")
-        resp = client.call({"query": domain, "location": "remote"})
-        return {"result": resp.get("data", "No job data returned.")}
+        client = A2AClient(endpoint="http://127.0.0.1:8001/api/projects")
+        resp = client.call({"project_spec": project_spec})
+        return {"result": resp.get("data", "No project analysis returned.")}
     except requests.exceptions.ConnectionError:
-        return {"result": "ERROR: Job Agent not reachable on port 8001. Is it running?"}
+        return {"result": "ERROR: Project Mentor Agent not reachable on port 8001. Is it running?"}
     except Exception as e:
-        return {"result": f"ERROR calling Job Agent: {str(e)}"}
+        return {"result": f"ERROR calling Project Mentor Agent: {str(e)}"}
 
 
 def request_learning_courses(skills: str) -> dict:
@@ -66,7 +67,7 @@ def request_learning_courses(skills: str) -> dict:
     Contact the Learning Agent microservice to get course recommendations for a set of skills.
 
     Args:
-        skills: Comma-separated skills identified from job market data
+        skills: Comma-separated skills/technologies identified from the project analysis
                 (e.g. 'Python, Docker, SQL').
 
     Returns:
@@ -87,29 +88,63 @@ def request_learning_courses(skills: str) -> dict:
 coordinator_agent = Agent(
     name="CoordinatorAgent",
     model="gemini-flash-latest",
-    tools=[request_job_market_data, request_learning_courses],
-    instruction="""You are the Career Coordinator Agent that orchestrates a multi-agent system.
+    tools=[request_project_analysis, request_learning_courses],
+    instruction = """
+You are the Career Coordinator Agent that orchestrates a multi-agent system.
 
-For every user request, follow these steps IN ORDER:
+Your role is to guide users in project-based learning by coordinating specialized agents.
 
-STEP 1 — Extract the career domain from the user's message.
+---
 
-STEP 2 — Call `request_job_market_data` with the domain to get job market analysis
-          from the Job Agent microservice.
+## ⚠️ IMPORTANT RULE
 
-STEP 3 — Analyse the job data and identify the top 3-5 most in-demand skills.
+If the user request does NOT clearly mention a project or project idea:
+- DO NOT call any tools
+- DO NOT assume or invent a project
+- Respond normally by asking the user to describe a project idea before proceeding
 
-STEP 4 — Call `request_learning_courses` with those specific skills (comma-separated)
-          to get course recommendations from the Learning Agent microservice.
+Only proceed with tool usage if a project is explicitly mentioned.
 
-STEP 5 — Synthesise EVERYTHING into a well-structured Markdown career game plan:
-  - ## 🎯 Career Overview
-  - ## 💼 Job Market Insights  (from Step 2)
-  - ## 🔑 Top Skills in Demand (from Step 3)
-  - ## 📚 Your Learning Roadmap (from Step 4)
-  - ## 🚀 Next Steps (your advice)
+---
 
-Be encouraging, concrete, and actionable. Always use BOTH tools before writing your answer.""",
+## WORKFLOW (ONLY IF PROJECT EXISTS)
+
+STEP 1 — Extract the project idea from the user message.
+
+STEP 2 — Call `request_project_analysis(project_specification)`
+to get required skills, technologies, frameworks, tools, and concepts
+(from the Project Mentor Agent).
+
+STEP 3 — Select the most important 3–5 skills from the analysis.
+
+STEP 4 — Call `request_learning_courses(skills)`
+using those selected skills (comma-separated)
+(from the Learning Agent).
+
+STEP 5 — Synthesize everything into a structured Markdown response:
+
+## 🎯 Project Overview
+## 🛠️ Project Analysis
+## 🔑 Key Skills & Technologies
+## 📚 Learning Roadmap
+## 🚀 Next Steps
+
+---
+
+## STYLE
+
+- Be clear, concise, and helpful
+- Be structured but not verbose
+- Focus on actionable guidance
+
+---
+
+## CONSTRAINTS
+
+- Never call tools without a project mention
+- Never hallucinate data
+- Always follow the workflow order
+""",
 )
 
 # ── 4. ADK Runner + Session Service ──────────────────────────────────────────
@@ -152,10 +187,17 @@ async def run_coordinator(prompt: str) -> str:
         if hasattr(event, "content") and event.content and event.content.parts:
             for part in event.content.parts:
                 if hasattr(part, "function_call") and part.function_call:
-                    print(f"[Coordinator] → Calling tool: {part.function_call.name}")
+                    print("\n" + "="*60)
+                    print(f"🧠 [COORDINATOR] TOOL CALL")
+                    print(f"   Tool    : {part.function_call.name}")
+                    print(f"   Params  : {dict(part.function_call.args)}")
+                    print("="*60)
                 if hasattr(part, "function_response") and part.function_response:
-                    print(f"[Coordinator] ← Tool result: {str(part.function_response.response)[:100]}…")
-
+                    print("\n" + "-"*60)
+                    print(f"🧠 [COORDINATOR] TOOL RESPONSE")
+                    print(f"   Tool    : {part.function_response.name}")
+                    print(f"   Returns : {str(part.function_response.response)[:300]}")
+                    print("-"*60 + "\n")
         if event.is_final_response() and event.content and event.content.parts:
             final_text = event.content.parts[0].text
 
