@@ -58,3 +58,11 @@ Once launched, the Streamlit app will open automatically in your browser (defaul
 
 ---
 *Happy Agentic Coding!* 🤖
+
+If you are using ubuntu
+To run the agents use the bash script 
+chmod +x start_all.sh
+./start_all.sh
+
+if you are using windows :
+.\start_all.ps1
