@@ -24,9 +24,6 @@ This repository establishes a **Multi-Agent (A2A)** platform powered by `google_
 In this repository, the true power of **Agent-to-Agent (A2A) protocol** is utilized. 
 We've replaced standard monolithic dependencies with distributed `A2AClient` module tools.
 
-- The `Coordinator Agent` leverages `A2AClient` from `google_adk.a2a` to cleanly run remote endpoints.
-- The `Streamlit App` utilizes the A2A protocol to dispatch messages to the central Coordinator.
-
 This decoupling ensures that agents can scale out independently.
 
 ## 🚀 How to Run Locally
@@ -47,7 +44,6 @@ You can launch the entire ecosystem using the provided batch scripts depending o
 ```bat
 start_all.bat
 ```
-
 ### 3. Usage
 Once launched, the Streamlit app will open automatically in your browser (default: `http://localhost:8501`).
 1. Type a career goal, e.g., *"I want to become a Senior AI Engineer."*
@@ -59,10 +55,3 @@ Once launched, the Streamlit app will open automatically in your browser (defaul
 ---
 *Happy Agentic Coding!* 🤖
 
-If you are using ubuntu
-To run the agents use the bash script 
-chmod +x start_all.sh
-./start_all.sh
-
-if you are using windows :
-.\start_all.ps1
