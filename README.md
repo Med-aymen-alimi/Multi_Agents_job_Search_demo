@@ -35,7 +35,7 @@ This decoupling ensures that agents can scale out independently.
 ### 2. Start the System
 You can launch the entire ecosystem using the provided batch scripts depending on your OS.
 
-**Windows (PowerShell):**
+**Windows (PowerShell) or linux:**
 ```powershell
 .\start_all.ps1
 ```
